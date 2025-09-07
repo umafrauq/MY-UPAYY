@@ -114,6 +114,7 @@
       max-width: 500px;
       margin: 20px auto;
       padding: 0 20px;
+      justify-content: center; /* ✅ center last row with 2 items */
     }
 
     .service {
@@ -138,10 +139,12 @@
       font-size: 14px;
       margin-top: 5px;
     }
+
+    /* ✅ updated to keep last 2 services aligned properly */
     .services-grid .service:last-child {
-      grid-column: span 3;  /* spans full row */
-      max-width: 150px;
-      margin: 0 auto;
+      grid-column: auto;
+      max-width: none;
+      margin: 0;
     }
 
     footer {
@@ -249,3 +252,4 @@ function toggleTheme() {
 </script>
 </body>
 </html>
+
