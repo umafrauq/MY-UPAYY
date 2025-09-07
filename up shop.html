@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UPay Shop</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial, sans-serif;}
+    body{background:#f5f5f5;color:#333;}
+    header{background:#004aad;color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;}
+    header .logo img{height:40px; border-radius: 10px;}
+    header .search-bar{flex:1;margin:0 20px;}
+    header input{width:100%;padding:8px;border-radius:4px;border:none;}
+    header .actions{display:flex;gap:15px;align-items:center;}
+    header .cart-count{background:red;color:#fff;border-radius:50%;padding:2px 6px;font-size:12px;}
+    .container{display:flex;}
+    nav{width:200px;background:#fff;padding:15px;min-height:100vh;}
+    nav h3{margin-bottom:10px;}
+    nav ul{list-style:none;}
+    nav li{padding:8px;cursor:pointer;border-radius:4px;}
+    nav li:hover{background:#eee;}
+    main{flex:1;padding:20px;}
+    .hero{background-image: url(showmax.jpg);padding:40px;text-align:center;margin-bottom:20px; color:white;}
+    .deals{margin-bottom:20px;}
+    .deal-items{display:flex;overflow-x:auto;gap:15px;padding:10px 0;}
+    .deal-items .product{min-width:200px;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:10px;}
+    .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;}
+    .product{background:#fff;padding:10px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);display:flex;flex-direction:column;}
+    .product img{max-width:100%;border-radius:8px;}
+    .product h4{margin:10px 0;font-size:16px;}
+    .product .price{font-weight:bold;color:#004aad;}
+    .product .old-price{text-decoration:line-through;color:#888;font-size:14px;margin-left:5px;}
+    .product button{margin-top:auto;padding:8px;background:#004aad;color:#fff;border:none;border-radius:4px;cursor:pointer;}
+    .product button:hover{background:#003080;}
+    #cartDrawer{position:fixed;top:0;right:-400px;width:300px;height:100%;background:#fff;box-shadow:-2px 0 5px rgba(0,0,0,0.3);transition:0.3s;padding:20px;overflow-y:auto;z-index:2000;}
+    #cartDrawer.active{right:0;}
+    #cartItems .cart-item{display:flex;justify-content:space-between;margin-bottom:10px;}
+    #cartItems .cart-item span{font-size:14px;}
+    footer{text-align:center;padding:15px;background:#222;color:#fff;margin-top:20px;}
+    @media(max-width:768px){
+      .container{flex-direction:column;}
+      nav{width:100%;min-height:auto;}
+    }
+    /* ✅ Checkout button styles */
+    .checkout-btn{
+      display:block;
+      width:100%;
+      padding:10px;
+      background:#004aad;
+      color:#fff;
+      border:none;
+      border-radius:4px;
+      font-size:16px;
+      cursor:pointer;
+      margin-top:10px;
+      text-align:center;
+      text-decoration:none;
+    }
+    .checkout-btn:hover{
+      background:green;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><img src="logo.jpg" alt="UPay Shop"></div>
+    <div class="search-bar"><input type="text" id="searchInput" placeholder="Search products..."></div>
+    <div class="actions">
+      <span id="loginBtn">Login</span>
+      <span id="cartBtn">Cart <span class="cart-count" id="cartCount">0</span></span>
+    </div>
+  </header>
+  <div class="container">
+    <nav>
+      <h3>Categories</h3>
+      <ul id="categoryList"></ul>
+    </nav>
+    <main>
+      <div class="hero">
+        <h2>Welcome to UPay Shop</h2>
+        <p>Your one-stop online shopping platform!</p>
+      </div>
+      <section class="deals">
+        <h3>🔥 Deals of the Day</h3>
+        <div class="deal-items" id="dealItems"></div>
+      </section>
+      <section>
+        <h3>All Products</h3>
+        <div class="products" id="productGrid"></div>
+      </section>
+    </main>
+  </div>
+  <div id="cartDrawer">
+    <h3>Your Cart</h3>
+    <div id="cartItems"></div>
+    <p><strong>Total: ₦<span id="cartTotal">0</span></strong></p>
+    <!-- ✅ Updated checkout button -->
+    <a href="checkout.html" class="checkout-btn">Proceed to Checkout</a>
+  </div>
+  <footer>
+    <p>© 2025 UPay Shop. All rights reserved.</p>
+  </footer>
+  <script>
+    const categories = ['All','Phones','Computers','Fashion','Groceries','Electronics','Food','Snacks'];
+    const products = [
+      {id:1, title:'iPhone 14', price:650000, oldPrice:700000, rating:4.5, category:'Phones', tags:['Apple','Smartphone'], img:'iphone 14.jpg'},
+      {id:1, title:'iPhone 16', price:930000, oldPrice:1200000, rating:4.7, category:'Phones', tags:['Apple','Smartphone'], img:'iphone 16.webp'},
+      {id:1, title:'iPhone 11', price:300000, oldPrice:350000, rating:4.8, category:'Phones', tags:['Apple','Smartphone'], img:'iphone 11.jpg'},
+
+      {id:2, title:'Samsung Galaxy S23', price:500000, oldPrice:550000, rating:4.3, category:'Phones', tags:['Samsung','Android'], img:'samsung s23.webp'},
+      {id:2, title:'Samsung Galaxy S10', price:500000, oldPrice:550000, rating:4.3, category:'Phones', tags:['Samsung','Android'], img:'samsung s10.jpg'},
+      {id:2, title:'Samsung Galaxy S7', price:80000, oldPrice:100000, rating:4.3, category:'Phones', tags:['Samsung','Android'], img:'samsung s7.jpg'},
+
+      {id:3, title:'Dell Laptop', price:350000, oldPrice:400000, rating:4.2, category:'Computers', tags:['Dell','Laptop'], img:'dell laptop.jpg'},
+      {id:3, title:'watch', price:35000, oldPrice:38000, rating:3.2, category:'Computers', tags:['Dell','Laptop'], img:'watch.webp'},
+      {id:3, title:'watch', price:15000, oldPrice:40000, rating:4.1, category:'Computers', tags:['Dell','Laptop'], img:'watch2.jpg'},
+      {id:3, title:'watch', price:30000, oldPrice:45000, rating:4.6, category:'Computers', tags:['Dell','Laptop'], img:'watch3.png'},
+      {id:3, title:'power bank', price:20000, oldPrice:220000, rating:4.2, category:'Computers', tags:['Dell','Laptop'], img:'power.jpg'},
+      {id:3, title:'power bank', price:10000, oldPrice:23000, rating:4.2, category:'Computers', tags:['Dell','Laptop'], img:'power2.png'},
+      {id:3, title:'power bank', price:15000, oldPrice:18000, rating:4.2, category:'Computers', tags:['Dell','Laptop'], img:'power3.jpg'},
+
+      {id:4, title:'HP Desktop', price:300000, oldPrice:340000, rating:4.0, category:'Computers', tags:['HP','Desktop'], img:'hp desktop.png'},
+      {id:5, title:'T-Shirt', price:5000, oldPrice:7000, rating:4.1, category:'Fashion', tags:['Clothing'], img:'shirt3.jpeg'},
+      {id:5, title:'T-Shirt', price:8000, oldPrice:10000, rating:4.1, category:'Fashion', tags:['Clothing'], img:'shirt2.jpg'},
+      {id:5, title:'T-Shirt', price:6000, oldPrice:9000, rating:4.1, category:'Fashion', tags:['Clothing'], img:'tshirt.jpg'},
+
+      {id:6, title:'Sneakers', price:15000, oldPrice:20000, rating:4.6, category:'Fashion', tags:['Shoes'], img:'sneakers.jpeg'},
+      {id:6, title:'Sneakers', price:12000, oldPrice:25000, rating:4.3, category:'Fashion', tags:['Shoes'], img:'sneakers3.jpeg'},
+
+      {id:7, title:'Rice Bag', price:25000, oldPrice:28000, rating:4.4, category:'Groceries', tags:['Food'], img:'rice bag.jpg'},
+      {id:8, title:'palm oil', price:6000, oldPrice:7000, rating:4.2, category:'Groceries', tags:['Cooking'], img:'palm oil.jpg'},
+      {id:8, title:'cornflakes', price:4000, oldPrice:5000, rating:4.2, category:'Groceries', tags:['Cooking'], img:'cornflakes.webp'},
+      {id:8, title:'milk', price:8000, oldPrice:10000, rating:4.4, category:'Groceries', tags:['Cooking'], img:'milk.jpg'},
+      {id:8, title:'sugar', price:11000, oldPrice:13000, rating:4.3, category:'Groceries', tags:['Cooking'], img:'sugar.jpg'},
+      {id:8, title:'stockfish', price:2500, oldPrice:3000, rating:4.7, category:'Groceries', tags:['Cooking'], img:'stockfish.webp'},
+
+      {id:9, title:'Smart TV', price:220000, oldPrice:250000, rating:4.3, category:'Electronics', tags:['Television'], img:'smart tv.jpg'},
+      {id:10, title:'Bluetooth Speaker', price:30000, oldPrice:35000, rating:4.5, category:'Electronics', tags:['Music'], img:'bluetooth speaker.jpg'},
+      {id:10, title:'iron', price:12000, oldPrice:15000, rating:4.5, category:'Electronics', tags:['Music'], img:'iron.webp'},
+      {id:10, title:'socket', price:15000, oldPrice:2500, rating:4.5, category:'Electronics', tags:['Music'], img:'socket.jpg'},
+      {id:10, title:'charger', price:4500, oldPrice:5500, rating:4.5, category:'Electronics', tags:['Music'], img:'charge.webp'},
+      {id:10, title:'charger', price:3000, oldPrice:5000, rating:4.5, category:'Electronics', tags:['Music'], img:'charger2.webp'},
+
+      {id:16, title:'Jollof Rice Pack', price:2500, oldPrice:3000, rating:4.2, category:'Food', tags:['Ready to Eat'], img:'jollof rice pack.webp'},
+      {id:17, title:'Grilled Chicken', price:4500, oldPrice:5000, rating:4.4, category:'Food', tags:['Hot Meal'], img:'grilled chicken.jpg'},
+      {id:18, title:'Pizza Slice', price:2000, oldPrice:2500, rating:4.0, category:'Food', tags:['Cheesy'], img:'pizza.webp'},
+      {id:19, title:'Chocolate Biscuits', price:200, oldPrice:300, rating:4.3, category:'Snacks', tags:['Sweet'], img:'biscuit.jpg'},
+      {id:19, title:'Chocolate Biscuits', price:200, oldPrice:300, rating:4.3, category:'Snacks', tags:['Sweet'], img:'biscuit2.jpg'},
+      {id:19, title:'Chocolate Biscuits', price:450, oldPrice:500, rating:4.3, category:'Snacks', tags:['Sweet'], img:'biscuit3.jpg'},
+
+      {id:20, title:'Potato Chips', price:800, oldPrice:1000, rating:4.1, category:'Snacks', tags:['Crispy'], img:'potato chips.jpg'},
+      {id:19, title:'soft Dink Can', price:2200, oldPrice:5500, rating:4.3, category:'Snacks', tags:['cold'], img:'soft drin can4.webp'},
+      {id:19, title:'Soft Drink Can', price:2300, oldPrice:2500, rating:4.3, category:'Snacks', tags:['cold'], img:'soft drin can2.jpg'},
+
+      {id:21, title:'Soft Drink Can', price:700, oldPrice:900, rating:4.2, category:'Snacks', tags:['Cold'], img:'soft drin can.jpg'}
+    ];
+    
+    // ✅ Load cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const categoryList=document.getElementById('categoryList');
+    const productGrid=document.getElementById('productGrid');
+    const dealItems=document.getElementById('dealItems');
+    const cartBtn=document.getElementById('cartBtn');
+    const cartDrawer=document.getElementById('cartDrawer');
+    const cartItems=document.getElementById('cartItems');
+    const cartCount=document.getElementById('cartCount');
+    const cartTotal=document.getElementById('cartTotal');
+    const searchInput=document.getElementById('searchInput');
+
+    categories.forEach(cat=>{
+      const li=document.createElement('li');
+      li.textContent=cat;
+      li.onclick=()=>filterCategory(cat);
+      categoryList.appendChild(li);
+    });
+
+    function displayProducts(items){
+      productGrid.innerHTML='';
+      items.forEach(p=>{
+        const div=document.createElement('div');
+        div.className='product';
+        div.innerHTML=`<img src="${p.img}" alt="${p.title}"><h4>${p.title}</h4>
+          <p><span class='price'>₦${p.price}</span> <span class='old-price'>₦${p.oldPrice}</span></p>
+          <p>⭐ ${p.rating}</p>
+          <p>${p.tags.join(', ')}</p>
+          <button onclick='addToCart(${p.id})'>Add to Cart</button>`;
+        productGrid.appendChild(div);
+      });
+    }
+
+    function filterCategory(cat){
+      if(cat==='All')displayProducts(products);
+      else displayProducts(products.filter(p=>p.category===cat));
+    }
+
+    function displayDeals(){
+      dealItems.innerHTML='';
+      products.slice(0,6).forEach(p=>{
+        const div=document.createElement('div');
+        div.className='product';
+        div.innerHTML=`<img src="${p.img}" alt="${p.title}"><h4>${p.title}</h4>
+          <p><span class='price'>₦${p.price}</span> <span class='old-price'>₦${p.oldPrice}</span></p>
+          <button onclick='addToCart(${p.id})'>Add</button>`;
+        dealItems.appendChild(div);
+      });
+    }
+
+    function addToCart(id){
+      const item=products.find(p=>p.id===id);
+      const exist=cart.find(c=>c.id===id);
+      if(exist)exist.qty++;
+      else cart.push({...item, qty:1});
+      updateCart();
+    }
+
+    function updateCart(){
+      cartItems.innerHTML='';
+      let total=0;
+      cart.forEach((c,i)=>{
+        total+=c.price*c.qty;
+        const div=document.createElement('div');
+        div.className='cart-item';
+        div.innerHTML=`<span>${c.title} x${c.qty}</span><span>₦${c.price*c.qty}</span><button onclick='removeFromCart(${i})'>x</button>`;
+        cartItems.appendChild(div);
+      });
+      cartTotal.textContent=total;
+      cartCount.textContent=cart.length;
+
+      // ✅ Save cart to localStorage every time it updates
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function removeFromCart(i){cart.splice(i,1);updateCart();}
+    function checkout(){alert('Checkout successful!');cart=[];updateCart();}
+
+    cartBtn.onclick=()=>{cartDrawer.classList.toggle('active');};
+    searchInput.oninput=()=>{
+      const q=searchInput.value.toLowerCase();
+      displayProducts(products.filter(p=>p.title.toLowerCase().includes(q)));
+    };
+
+    displayProducts(products);
+    displayDeals();
+    updateCart(); // refresh cart from storage (and save it back)
+  </script>
+</body>
+</html>

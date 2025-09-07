@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - UPay Shop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .checkout-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      background: #f1f1f1;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .total {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-top: 15px;
+    }
+
+    .wallet {
+      margin: 10px 0;
+      padding: 10px;
+      background: #eef;
+      border-radius: 8px;
+    }
+
+    .payment-btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      background: blue;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .payment-btn:hover {
+      background: green;
+    }
+
+    .fund-wallet {
+      display: none;
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .fund-wallet input {
+      width: calc(100% - 22px);
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .fund-btn {
+      background: orange;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .fund-btn:hover {
+      background: darkorange;
+    }
+  </style>
+</head>
+<body>
+  <h1>Checkout</h1>
+  <div class="checkout-container">
+    <h2>Your Order</h2>
+    <ul id="checkout-items"></ul>
+    <p class="total">Total: ₦<span id="checkout-total">0</span></p>
+
+    <div class="wallet">
+      <p><b>Your UPay Wallet Balance:</b> ₦<span id="wallet-balance">0</span></p>
+    </div>
+
+    <button class="payment-btn" onclick="proceedPayment()">Proceed to Payment</button>
+
+    <!-- Hidden fund wallet section -->
+    <div class="fund-wallet" id="fund-wallet">
+      <h3>💳 Fund Your Wallet</h3>
+      <input type="number" id="fund-amount" placeholder="Enter amount to fund" />
+      <button class="fund-btn" onclick="fundWallet()">Add Funds</button>
+    </div>
+  </div>
+
+  <script>
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let checkoutItems = document.getElementById("checkout-items");
+    let checkoutTotal = document.getElementById("checkout-total");
+    let walletBalanceEl = document.getElementById("wallet-balance");
+    let fundWalletDiv = document.getElementById("fund-wallet");
+
+    // load wallet balance (default ₦5000 if not set yet)
+    let walletBalance = localStorage.getItem("walletBalance");
+    if(walletBalance === null){
+      walletBalance = 5000; // default balance
+      localStorage.setItem("walletBalance", walletBalance);
+    } else {
+      walletBalance = parseInt(walletBalance);
+    }
+    walletBalanceEl.textContent = walletBalance;
+
+    function loadCheckout() {
+      checkoutItems.innerHTML = "";
+      let total = 0;
+      cart.forEach(item => {
+        total += item.price;
+        let li = document.createElement("li");
+        li.textContent = `${item.name} - ₦${item.price}`;
+        checkoutItems.appendChild(li);
+      });
+      checkoutTotal.textContent = total;
+    }
+
+    function proceedPayment() {
+      let total = parseInt(checkoutTotal.textContent);
+
+      if(cart.length === 0){
+        alert("Your cart is empty!");
+        return;
+      }
+
+      if(walletBalance >= total){
+        walletBalance -= total;
+        localStorage.setItem("walletBalance", walletBalance);
+        localStorage.removeItem("cart"); // clear cart after payment
+        alert("✅ Payment successful! Your new wallet balance is ₦" + walletBalance);
+        location.reload();
+      } else {
+        alert("❌ Insufficient wallet balance. Please fund your UPay Wallet.");
+        fundWalletDiv.style.display = "block"; // show fund wallet section
+      }
+    }
+
+    function fundWallet(){
+      let amount = parseInt(document.getElementById("fund-amount").value);
+      if(isNaN(amount) || amount <= 0){
+        alert("Enter a valid amount to fund.");
+        return;
+      }
+      walletBalance += amount;
+      localStorage.setItem("walletBalance", walletBalance);
+      walletBalanceEl.textContent = walletBalance;
+      document.getElementById("fund-amount").value = "";
+      alert("✅ Wallet funded successfully! Your new balance is ₦" + walletBalance);
+      fundWalletDiv.style.display = "none"; // hide after funding
+    }
+
+    loadCheckout();
+  </script>
+</body>
+</html>
